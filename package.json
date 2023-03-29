@@ -1,0 +1,19 @@
+{
+  "name": "scroll-automation",
+  "scripts": {
+    "build": "tsc -p .",
+    "start": "node index.js",
+    "dev": "tsc -p . --watch"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "ethers": "^6.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "^18.15.11",
+    "@typescript-eslint/eslint-plugin": "^5.57.0",
+    "@typescript-eslint/parser": "^5.57.0",
+    "eslint": "^8.37.0",
+    "typescript": "^5.0.2"
+  }
+}
