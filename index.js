@@ -40,7 +40,7 @@ var Wallet = ethers_1.ethers.Wallet;
 var Contract = ethers_1.ethers.Contract;
 dotenv.config();
 const privateKey = (_a = process.env.PRIVATE_KEY) !== null && _a !== void 0 ? _a : 'stub';
-const goerliRpc = 'https://eth-goerli.public.blastapi.io';
+const goerliRpc = 'https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161';
 const scrollRpc = 'https://alpha-rpc.scroll.io/l2';
 const bridgeContractAddress = '0xe5E30E7c24e4dFcb281A682562E53154C15D3332';
 const goerliProvider = new JsonRpcProvider(goerliRpc);
@@ -674,12 +674,6 @@ const bridgeAbi = `
 `;
 //TODO hardhat-ether getContractAt WITHOUT ABI https://hardhat.org/hardhat-runner/plugins/nomiclabs-hardhat-ethers#helpers
 const goerliBridgeContract = new Contract(bridgeContractAddress, bridgeAbi, goerliSigner);
-function test() {
-    return __awaiter(this, void 0, void 0, function* () {
-        const blockNumber = yield scrollProvider.getBlockNumber();
-        console.info(blockNumber);
-    });
-}
 function estimateGas(provider) {
     return __awaiter(this, void 0, void 0, function* () {
         const block = yield provider.getBlock('latest');
@@ -688,12 +682,25 @@ function estimateGas(provider) {
 }
 function bridgeGoerliToScroll() {
     return __awaiter(this, void 0, void 0, function* () {
-        const test = 123;
-        // const gas = estimateGas(goerliProvider);
-        const result = yield goerliBridgeContract.depositETH(100000, 40000, { gasLimit: 40000, value: 1000000 });
+        const amount = ethers_1.ethers.parseEther("0.00000001");
+        const protocolFee = ethers_1.ethers.parseEther('0.000000044');
+        const feeData = yield goerliProvider.getFeeData();
+        console.info(feeData);
+        const gasLimit = yield goerliBridgeContract.depositETH.estimateGas(amount, 40000, {
+            value: amount + protocolFee
+        });
+        console.info(`Gas limit: ${gasLimit}`);
+        const transactionFee = feeData.gasPrice * gasLimit;
+        console.info(`Transaction fee: ${ethers_1.ethers.formatEther(transactionFee)}`);
+        const overrides = {
+            gasLimit,
+            value: amount + protocolFee,
+            maxFeePerGas: feeData.maxFeePerGas,
+            maxPriorityFeePerGas: feeData.maxPriorityFeePerGas
+        };
+        // TODO why 40000?
+        const result = yield goerliBridgeContract.depositETH(amount, 40000, overrides);
         console.info(result);
     });
 }
-test();
-// estimateGas(goerliProvider);
 bridgeGoerliToScroll();
